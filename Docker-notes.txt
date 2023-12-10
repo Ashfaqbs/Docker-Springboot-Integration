@@ -1,0 +1,237 @@
+docker run --name mysql8db --network springboot-mysql-network -e MYSQL_ROOT_PASSWORD=admin -e MYSQL_DATABASE=product_prod_schema  -e MYSQL_USER=ashfaq -e MYSQL_PASSWORD=ashfaq  -d mysql:8.0.30
+
+C:\Users\Ashfaq PC>docker run --name mysql8db --network springboot-mysql-network -e MYSQL_ROOT_PASSWORD=admin -e MYSQL_DATABASE=libraru -e MYSQL_USER=ashfaq -e MYSQL_PASSWORD=ashfaq  -d mysql:8.0.30
+550babf94697344053637c68f783ee0a3ddaec3386851b300a2261dd6fba46bb
+
+$ docker exec -it mysql8db or container ID bash
+
+so docker exec -it 550 bash
+
+now as it comes to interactive mode lets interact with  the DB  , login with abouve provided cred -e MYSQL_USER=ashfaq -e MYSQL_PASSWORD=ashfaq
+mysql -uashfaq -pashfaq
+
+-update the application.properties 
+instead of localhost we will use container name
+spring.datasource.url=jdbc:mysql://mysql8db:3306/product_prod_schema
+spring.datasource.username=ashfaq
+spring.datasource.password=ashfaq
+
+
+
+
+docker run --name mysql8db --network springboot-mysql-network -e MYSQL_ROOT_PASSWORD=admin -e MYSQL_DATABASE=library -e MYSQL_USER=ashfaq -e MYSQL_PASSWORD=ashfaq  -p 3333:3306 -d mysql:8.0.30
+
+
+spring.datasource.url=jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/library
+spring.datasource.username=${MYSQL_USER:root}
+spring.datasource.password=${MYSQL_PASSWORD:ashfaq}
+
+
+docker run --network=springboot-mysql-network --name springboot-container   -e MYSQL_HOST=mysql8db  -e MYSQL_USER=ashfaq
+ -e MYSQL_PASSWORD=ashfaq    -p 8081:8080 -d springboot3j21-mysql8
+
+
+create a docker  (bridge by default) network 
+
+pull mysql DB 
+ 
+ create a running sql container with some diffrent port as already db will be running on port 3306
+ docker run --name mysql8db --network springboot-mysql-network -e MYSQL_ROOT_PASSWORD=admin -e MYSQL_DATABASE=libraru -e MYSQL_USER=ashfaq -e MYSQL_PASSWORD=ashfaq  -p 3307:3306 -d mysql:8.0.30
+550babf94697344053637c68f783ee0a3ddaec3386851b300a2261dd6fba46bb
+wait for some 5-10 min then connect with workbench and let the host be localhost and use above port and cred 
+
+
+once done u can interact with it 
+C:\Users\Ashfaq PC>docker run --name mysql8db --network springboot-mysql-network -e MYSQL_ROOT_PASSWORD=admin -e MYSQL_DATABASE=libraru -e MYSQL_USER=ashfaq -e MYSQL_PASSWORD=ashfaq  -d mysql:8.0.30
+550babf94697344053637c68f783ee0a3ddaec3386851b300a2261dd6fba46bb
+
+$ docker exec -it mysql8db or container ID bash
+
+C:\Users\Ashfaq PC>docker exec -it 550b bash
+bash-4.4# mysql -uashfaq -pashfaq
+mysql: [Warning] Using a password on the command line interface can be insecure.
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 91
+Server version: 8.0.30 MySQL Community Server - GPL
+
+Copyright (c) 2000, 2022, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> show databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| library            |
+| performance_schema |
++--------------------+
+3 rows in set (0.01 sec)
+
+
+
+now create a springboot app with crud logic here we are using springboot 3 and java 21 
+once done u can connect to ur normal DB and or to the container DB when doing this just add localhost , container port and its cred 
+
+but follow this way , connect to ur normal DB and modify the connections like this 
+this is when ur connecting to the normal DB 
+spring.datasource.url=jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/library
+spring.datasource.username=${MYSQL_USER:root}
+spring.datasource.password=${MYSQL_PASSWORD:admin}
+
+
+-DMYSQL_USER=ashfaq  -DMYSQL_PASSWORD=ashfaq  -DMYSQL_PORT=3307
+
+now we need to add VM configurations so go to projects > run as > run configurations > VMware arguments and add -DMYSQL_USER=ashfaq -DMYSQL_PASSWORD=ashfaq -DMYSQL_PORT=3333
+now add a Dockerfile and add this 
+FROM openjdk:21
+ADD target/*.jar  app.jar
+ENTRYPOINT ["java","-jar","/app.jar"]
+
+build Jar  run as maven build clean install
+
+
+and build the springboot container
+docker build -t springboot3j21-mysql8:latest
+
+
+now run this image in the same DB network and define the host , port and DB credentials
+docker run --network=springboot-mysql-network --name springboot-container   -e MYSQL_HOST=mysql8db  -e MYSQL_USER=ashfaq -e MYSQL_PASSWORD=ashfaq    -p 8081:8080 -d springboot3j21-mysql8
+
+docker run --network=springboot-mysql-network --name springboot-container   -e MYSQL_HOST=mysql8db  -e MYSQL_USER=ashfaq
+ -e MYSQL_PASSWORD=ashfaq    -p 8081:8080 -d springboot3j21-mysql8
+
+go to browser and call in localhost:8081 to call the apis defined and use post man for post or delete or patch
+
+
+
+docker run --name mysqldbpr  --network apibackendTest -e MYSQL_ROOT_PASSWORD=admin -e MYSQL_DATABASE=springboot -e MYSQL_USER=ashfaq -e MYSQL_PASSWORD=ashfaq   -p 3307:3306 -d mysql:8.0.30
+
+
+docker run --network=apibackendTest --name springbootpractise   -e MYSQL_HOST=mysqldbpr  -e MYSQL_USER=ashfaq -e MYSQL_PASSWORD=ashfaq  -p 8081:8080 -d darksharkash/springbootpract:v1
+
+
+
+--rough
+
+Working with volumes
+
+create a volume name demo
+
+eg :
+C:\Users\Ashfaq PC>docker volume ls
+DRIVER    VOLUME NAME
+
+C:\Users\Ashfaq PC>docker volume create volume1
+volume1
+
+create a mysql db container and attach the volume to the container
+eg : docker run -d --name VolumeTest -v demo:/var/lib/mysql   -p 3305:3306 -e MYSQL_ROOT_PASSWORD=admin -e MYSQL_USER=ashfaq -e MYSQL_PASSWORD=ashfaq mysql:8.0.30
+
+
+so now if u stop and remove this container VolumeTest and launh the same continer or diffrent container  -v demo:/var/lib/mysql and connect to work bench we will see the schemas ., tables and data if already created
+
+to test connect to work bench with the continer connected to volume and create s schemas, table and add data 
+-----------------------------------------------------
+create User schema 
+
+CREATE SCHEMA `AMC_Schema_BKP` ;
+
+CREATE TABLE User.user_entity (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    registration_date DATE NOT NULL
+);
+
+add data 
+INSERT INTO User.user_entity (username, email, registration_date)
+VALUES
+    ('JohnDoe', 'john.doe@email.com', '2023-01-01'),
+    ('JaneSmith', 'jane.smith@email.com', '2023-02-05'),
+    ('BobJohnson', 'bob.johnson@email.com', '2023-03-10'),
+    ('AliceBrown', 'alice.brown@email.com', '2023-04-15'),
+    ('CharlieWilson', 'charlie.wilson@email.com', '2023-05-20');
+
+----------------------------------------------------------------
+
+
+note 
+if a continer is running and using the volume we canot start another container using the same volume 
+
+eg: already started one docker run -d --name VolumeTest -v demo:/var/lib/mysql   -p 3305:3306 -e MYSQL_ROOT_PASSWORD=admin -e MYSQL_USER=ashfaq -e MYSQL_PASSWORD=ashfaq mysql:8.0.30
+
+starting another one docker run -d --name VolumeTest1 -v demo:/var/lib/mysql   -p 3307:3306 -e MYSQL_ROOT_PASSWORD=admin -e MYSQL_USER=ashfaq -e MYSQL_PASSWORD=ashfaq mysql:8.0.30
+
+this will fail and in logs we can see like 
+
+2023-12-08T11:15:43.712672Z 1 [System] [MY-013576] [InnoDB] InnoDB initialization has started.
+2023-12-08T11:15:43.870603Z 1 [ERROR] [MY-012574] [InnoDB] Unable to lock ./ibdata1 error: 11
+2023-12-08T11:15:44.871018Z 1 [ERROR] [MY-012574] [InnoDB] Unable to lock ./ibdata1 error: 11
+
+of the second container logs 
+The error message "Unable to lock ./ibdata1 error: 11" usually occurs when MySQL is unable to access the ibdata1 file. This could be due to the file being locked by another process
+
+
+
+
+
+--rough 
+volume test volume1
+
+
+CREATE SCHEMA `AMC_Schema_BKP` ;
+
+CREATE TABLE AMC_Schema_BKP.user_entity (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    registration_date DATE NOT NULL
+);
+
+
+C:\Users\Ashfaq PC>docker run -d -p 3303:3306 --name mysqldbv1 -v volume1:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=admin -e MYSQL_USER=ashfaq -e MYSQL_PASSWORD=ashfaq dbaea59d1b4194257138a6434ec0820a13097dd7e900135e78daf9759fe2407a
+ecc1a671ac314bf11f09e81e08a70fc6d813997f71b3603c7d73f97c9f4f9865
+
+
+bkp1
+
+
+docker run -d -p 3307:3306 --name mysqldbv1 -v bkp1:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=admin -e MYSQL_USER=ashfaq -e MYSQL_PASSWORD=ashfaq dbaea59d1b4194257138a6434ec0820a13097dd7e900135e78daf9759fe2407a
+ecc1a671ac314bf11f09e81e08a70fc6d813997f71b3603c7d73f97c9f4f9865
+
+
+
+
+
+C:\Users\Ashfaq PC>docker kill ecc
+ecc
+
+C:\Users\Ashfaq PC>docker rm ecc
+ecc
+
+C:\Users\Ashfaq PC>docker run -d -p 3303:3306 --name mysqldbv1 -v volume1:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=admin -e MYSQL_USER=ashfaq -e MYSQL_PASSWORD=ashfaq dbaea59d1b4194257138a6434ec0820a13097dd7e900135e78daf9759fe2407a
+0f0593c85b854bdddb9ac871370e1a3c700d886c0f94aa95fcea575f20b6e0ba
+
+C:\Users\Ashfaq PC>
+
+in workbenchwe can connect and see the data
+
+
+
+
+
+docker run -d -p 3302:3306 --name mysqldbnew -v volume1:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=admin -e MYSQL_USER=ashfaq -e MYSQL_PASSWORD=ashfaq dbaea59d1b4194257138a6434ec0820a13097dd7e900135e78daf9759fe2407a
+
+
+
+
+
+docker run -d -p 3307:3306 --name mysqldbpr1 --network=apibackendTest  -e MYSQL_DATABASE=springboot  -e MYSQL_ROOT_PASSWORD=admin -e MYSQL_USER=ashfaq -e MYSQL_PASSWORD=ashfaq dbaea59d1b41
+
+docker run --network=apibackendTest --name springbootpr1  -e MYSQL_HOST=mysqldbpr1  -e MYSQL_USER=ashfaq -e MYSQL_PASSWORD=ashfaq  -p 8081:8080 -d 97792df54c206e1ae902892d1da65777be28d77ee43ac6be39e12c387c432fe6
+ 
